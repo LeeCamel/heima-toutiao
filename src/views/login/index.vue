@@ -8,15 +8,24 @@
       <div class="login-head">
         <div class="logo"></div>
       </div>
-      <el-form class="login-form" ref="form" :model="user">
-        <el-form-item>
+      <!--
+      配置Form表单验证：
+      1. 必须给 el-form 组件绑定 model 为表单数据对象
+      2. Form 组件提供了表单验证的功能，只需要通过 rules 属性传入约定的验证规则，并将 Form-Item 的 prop 属性设置为需校验的字段名即可。
+      3. 通过 el-form 组件的 rules 属性配置验证规则，如果内置的验证规则不满足，也可以自定义验证规则
+      手动触发表单验证：
+      1. 给 el-form 设置 ref 起个名字（不重复即可）
+      2. 通过 ref 获取 el-form 组件，调用组件的 validate 方法进行验证
+      -->
+      <el-form class="login-form" ref="login-form" :model="user" :rules="formRules">
+        <el-form-item prop="mobile">
           <el-input v-model="user.mobile" placeholder="请输入手机号"></el-input>
         </el-form-item>
-        <el-form-item>
+        <el-form-item prop="code">
           <el-input v-model="user.code" placeholder="请输入验证码"></el-input>
         </el-form-item>
-        <el-form-item>
-          <el-checkbox v-model="checked">我已阅读并同意用户协议和隐私条款</el-checkbox>
+        <el-form-item prop="agree">
+          <el-checkbox v-model="user.agree">我已阅读并同意用户协议和隐私条款</el-checkbox>
         </el-form-item>
         <el-form-item>
           <el-button class="login-btn" type="primary" @click="onLogin" :loading="loginLoading">登录</el-button>
@@ -36,10 +45,54 @@ export default {
     return {
       user: {
         mobile: '', // 手机号
-        code: '' // 验证码
+        code: '', // 验证码
+        agree: false // 同意协议
       },
-      checked: false, // 是否同意协议的选中状态
-      loginLoading: false
+      // checked: false, // 是否同意协议的选中状态
+      loginLoading: false,
+      formRules: {
+        // 表单验证规则配置
+        // 要验证的数据名称：规则列表[]
+        mobile: [
+          {
+            required: true,
+            message: '请输入手机号',
+            trigger: 'change'
+          },
+          {
+            pattern: /^1[35789]\d{9}$/,
+            message: '请输入正确的号码格式',
+            trigger: 'change'
+          }
+        ],
+        code: [
+          {
+            required: true,
+            message: '验证码不能为空',
+            trigger: 'change'
+          },
+          {
+            pattern: /^\d{6}$/,
+            message: '请输入正确的验证码格式'
+          }
+        ],
+        agree: [
+          {
+            // 自定义校验规则：https://element.eleme.cn/#/zh-CN/component/form#zi-ding-yi-xiao-yan-gui-ze
+            // 验证通过：callback()
+            // 验证失败：callback(new Error('错误消息'))
+            validator: (rule, value, callback) => {
+              if (value) {
+                callback()
+              } else {
+                callback(new Error('请同意用户协议'))
+              }
+            },
+            // message: '请勾选同意用户协议',
+            trigger: 'change'
+          }
+        ]
+      }
     }
   },
   computed: {},
@@ -51,10 +104,19 @@ export default {
   methods: {
     onLogin () {
       // 获取表单数据（根据接口要求绑定数据）
-      const user = this.user
+      // const user = this.user
 
-      // 表单验证
+      // 表单验证，validate方法是异步的
+      this.$refs['login-form'].validate((valid) => {
+        if (!valid) {
+          return false
+        } else {
+          this.login()
+        }
+      })
+    },
 
+    login () {
       // 开启登录中loading
       this.loginLoading = true
 
@@ -63,7 +125,7 @@ export default {
         method: 'POST',
         url: '/mp/v1_0/authorizations',
         // data 用来设置 POST 请求体
-        data: user
+        data: this.user
       }).then(res => {
         // 登录成功
         console.log(res)
