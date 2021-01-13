@@ -46,9 +46,9 @@ export default {
   data () {
     return {
       user: {
-        mobile: '', // 手机号
-        code: '', // 验证码
-        agree: false // 同意协议
+        mobile: '13911111111', // 手机号
+        code: '246810', // 验证码
+        agree: true // 同意协议
       },
       // checked: false, // 是否同意协议的选中状态
       loginLoading: false,
@@ -132,6 +132,11 @@ export default {
         })
         // 关闭loading
         this.loginLoading = false
+        // 跳转到首页
+        // this.$router.push('/')
+        this.$router.push({
+          name: 'home'
+        })
       }).catch(err => {
         // 登录失败
         console.log('登录失败', err)
