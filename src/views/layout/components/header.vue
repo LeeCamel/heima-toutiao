@@ -1,8 +1,12 @@
 <template>
   <div class="header-container">
     <div>
-      <i class="el-icon-s-fold"></i>
-      <span>江苏传智播客科技教育有限公司</span>
+      <i :class="{
+        'el-icon-s-fold': isAsideCollapsed,
+        'el-icon-s-unfold': !isAsideCollapsed
+      }" @click="isAsideCollapsed = !isAsideCollapsed">
+      </i>
+      <span> 开心生活科技</span>
     </div>
     <el-dropdown>
       <div class="avatar-wrap">
@@ -24,7 +28,7 @@ import { getUserProfile } from '@/api/user'
 export default {
   name: 'AppHeader',
   components: {},
-  props: {},
+  props: ['is-aside-collapsed'],
   data () {
     return {
       user: {}

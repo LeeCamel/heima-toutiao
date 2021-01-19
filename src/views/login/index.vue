@@ -125,13 +125,15 @@ export default {
       // 验证通过，提交登录
       login(this.user).then(res => {
         // 登录成功
-        console.log(res)
+        // console.log(res)
         this.$message({
           message: '登录成功',
           type: 'success'
         })
         // 关闭loading
         this.loginLoading = false
+        // 将接口返回的用户数据保存到本地
+        window.localStorage.setItem('user', JSON.stringify(res.data.data))
         // 跳转到首页
         // this.$router.push('/')
         this.$router.push({
