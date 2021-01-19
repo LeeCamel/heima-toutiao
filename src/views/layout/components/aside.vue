@@ -2,7 +2,7 @@
   <!--
     el-menu-item 的 index 不能重复，确保唯一即可
    -->
-  <el-menu class="nav-menu" default-active="/" background-color="#002033" text-color="#fff" active-text-color="#ffd04b" router>
+  <el-menu class="nav-menu" default-active="/" background-color="#002033" text-color="#fff" active-text-color="#ffd04b" router :collapse="isAsideCollapsed">
     <el-menu-item index="/">
       <i class="el-icon-s-home"></i>
       <span slot="title">首页</span>
@@ -38,9 +38,11 @@
 export default {
   name: 'AppAside',
   components: {},
-  props: {},
+  props: ['is-aside-collapsed'],
   data () {
-    return {}
+    return {
+      // isCollapse: false
+    }
   },
   computed: {},
   watch: {},
