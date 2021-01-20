@@ -30,8 +30,9 @@
           </el-form-item>
           <el-form-item label="日期">
             <el-date-picker
-              v-model="form.date1"
+              v-model="pubDates"
               type="datetimerange"
+              value-format="yyyy-MM-dd"
               start-placeholder="开始日期"
               end-placeholder="结束日期"
               :default-time="['12:00:00']">
@@ -39,7 +40,7 @@
           </el-form-item>
           <el-form-item>
             <!-- button 按钮的 click 事件有个默认参数，当你没有指定参数的时候，它会默认传递一个没用的数据 -->
-            <el-button type="primary" @click="loadArticles(1)">查询</el-button>
+            <el-button type="primary" :disabled="loading" @click="loadArticles(1)">查询</el-button>
           </el-form-item>
         </el-form>
         <!-- /数据筛选表单 -->
@@ -68,6 +69,7 @@
           style="width: 100%"
           class="list-table"
           size="mini"
+          v-loading="loading"
         >
           <el-table-column
             label="封面">
@@ -134,6 +136,7 @@
           background
           :total="totalArticlesCount"
           :page-size="pageSize"
+          :disabled="loading"
           @current-change="onPageChange">
         </el-pagination>
         <!-- /列表分页 -->
@@ -151,25 +154,24 @@ export default {
   props: {},
   data () {
     return {
-      form: {
-        name: '',
-        region: '',
-        date1: '',
-        date2: '',
-        delivery: false,
-        type: [],
-        resource: '',
-        desc: ''
-      },
       articles: [],
       totalArticlesCount: 0,
-      pageSize: 20,
+      pageSize: 10,
       articleStatus: null,
       articleChannels: [],
-      articleChannelIdSelected: null
+      articleChannelIdSelected: null,
+      pubDates: [],
+      loading: true
     }
   },
-  computed: {},
+  computed: {
+    beginPubDate () {
+      return this.pubDates ? this.pubDates[0] : null
+    },
+    endPubDate () {
+      return this.pubDates ? this.pubDates[1] : null
+    }
+  },
   watch: {},
   created () {
     this.loadArticles(1)
@@ -178,16 +180,20 @@ export default {
   mounted () {},
   methods: {
     loadArticles (page = 1) {
+      this.loading = true
       getArticles({
         page,
         per_page: this.pageSize,
         status: this.articleStatus,
-        channel_id: this.articleChannelIdSelected
+        channel_id: this.articleChannelIdSelected,
+        begin_pubdate: this.beginPubDate,
+        end_pubdate: this.endPubDate
       }).then(res => {
         // const { articles, total_count } = res.data.data // 1.解构语法；2.ESLint: Identifier 'total_count' is not in camel case.(camelcase)
         const { results, total_count: totalArticlesCount } = res.data.data // 1.解构语法；2.ESLint: Identifier 'total_count' is not in camel case.(camelcase)
         this.articles = results
         this.totalArticlesCount = totalArticlesCount
+        this.loading = false
       })
     },
     getArticleChannels () {
