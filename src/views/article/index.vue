@@ -139,7 +139,7 @@
           :page-size="pageSize"
           :disabled="loading"
           :current-page.sync="currentPage"
-          @current-change="onPageChange">
+          @current-change="loadArticles">
         </el-pagination>
         <!-- /列表分页 -->
       </div>
@@ -208,9 +208,9 @@ export default {
         this.articleChannels = res.data.data.channels
       })
     },
-    onPageChange (page) {
-      this.loadArticles(page)
-    },
+    // onPageChange (page) {
+    //   this.loadArticles(page)
+    // },
     onDeleteArticle (articleID) {
       this.$confirm('确认删除吗？', '删除提示', {
         confirmButtonText: '确定',

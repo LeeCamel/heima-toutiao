@@ -12,7 +12,7 @@
               'el-icon-s-unfold': !isAsideCollapsed
             }" @click="isAsideCollapsed = !isAsideCollapsed">
             </i>
-            <span> 开心生活科技</span>
+            <span> 开开心心地生活和工作</span>
           </div>
           <el-dropdown>
             <div class="avatar-wrap">
