@@ -133,6 +133,7 @@
         <!-- /数据列表 -->
         <!-- 列表分页 -->
         <el-pagination
+          class="pagination"
           layout="prev, pager, next"
           background
           :total="totalArticlesCount"
@@ -250,6 +251,10 @@ export default {
 }
 
 .image-slot {
+  text-align: center;
+}
+
+.pagination {
   text-align: center;
 }
 </style>
