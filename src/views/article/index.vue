@@ -13,19 +13,19 @@
         <!-- 数据筛选表单 -->
         <el-form ref="form" :model="form" label-width="50px" size="mini">
           <el-form-item label="状态">
-            <el-radio-group v-model="form.resource">
-              <el-radio label="全部"></el-radio>
-              <el-radio label="草稿"></el-radio>
-              <el-radio label="待审核"></el-radio>
-              <el-radio label="审核通过"></el-radio>
-              <el-radio label="审核失败"></el-radio>
-              <el-radio label="已删除"></el-radio>
+            <el-radio-group v-model="articleStatus">
+              <el-radio :label="null">全部</el-radio>
+              <el-radio :label="0">草稿</el-radio>
+              <el-radio :label="1">待审核</el-radio>
+              <el-radio :label="2">审核通过</el-radio>
+              <el-radio :label="3">审核失败</el-radio>
+              <el-radio :label="4">已删除</el-radio>
             </el-radio-group>
           </el-form-item>
           <el-form-item label="频道">
-            <el-select v-model="form.region" placeholder="请选择频道">
-              <el-option label="区域一" value="shanghai"></el-option>
-              <el-option label="区域二" value="beijing"></el-option>
+            <el-select v-model="articleChannelIdSelected" placeholder="请选择频道">
+              <el-option label="全部" :value="null"/>
+              <el-option v-for="(channel, index) in articleChannels" :label="channel.name" :value="channel.id" :key="index"/>
             </el-select>
           </el-form-item>
           <el-form-item label="日期">
@@ -38,7 +38,8 @@
             </el-date-picker>
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" @click="onSubmit">查询</el-button>
+            <!-- button 按钮的 click 事件有个默认参数，当你没有指定参数的时候，它会默认传递一个没用的数据 -->
+            <el-button type="primary" @click="loadArticles(1)">查询</el-button>
           </el-form-item>
         </el-form>
         <!-- /数据筛选表单 -->
@@ -47,7 +48,7 @@
 
     <el-card class="box-card">
       <div slot="header" class="clearfix">
-        <span>根据筛选条件共查询到 46147 条结果：</span>
+        <span>根据筛选条件共查询到 {{ totalArticlesCount }} 条结果：</span>
       </div>
       <div class="text item">
         <!-- 数据列表 -->
@@ -69,8 +70,24 @@
           size="mini"
         >
           <el-table-column
-            prop="cover.images[1]"
             label="封面">
+            <template slot-scope="scope">
+              <!--
+              <img v-if="scope.row.cover.images[0]" class="article-cover" :src="scope.row.cover.images[0]" alt="">
+              <img v-else class="article-cover" src="./no-cover.gif" alt="">
+              -->
+              <!-- 下面这种情况是在运行期间动态改变处理的。而本地图片必须在打包的时候就存在。 -->
+              <!-- <img class="article-cover" :src="scope.row.cover.images[0] || './no-cover.gif'" alt=""> -->
+              <el-image
+                style="width: 100px; height: 100px"
+                :src="scope.row.cover.images[0]"
+                fit="fit"
+                lazy>
+                <div slot="placeholder" class="image-slot">
+                  加载中<span class="dot">...</span>
+                </div>
+              </el-image>
+            </template>
           </el-table-column>
           <el-table-column
             prop="title"
@@ -115,7 +132,9 @@
         <el-pagination
           layout="prev, pager, next"
           background
-          :total="1000">
+          :total="totalArticlesCount"
+          :page-size="pageSize"
+          @current-change="onPageChange">
         </el-pagination>
         <!-- /列表分页 -->
       </div>
@@ -124,7 +143,7 @@
 </template>
 
 <script>
-import { getArticles } from '@/api/article'
+import { getArticles, getArticleChannels } from '@/api/article'
 
 export default {
   name: 'ArticleIndex',
@@ -142,23 +161,42 @@ export default {
         resource: '',
         desc: ''
       },
-      articles: []
+      articles: [],
+      totalArticlesCount: 0,
+      pageSize: 20,
+      articleStatus: null,
+      articleChannels: [],
+      articleChannelIdSelected: null
     }
   },
   computed: {},
   watch: {},
   created () {
-    this.loadArticles()
+    this.loadArticles(1)
+    this.getArticleChannels()
   },
   mounted () {},
   methods: {
-    onSubmit () {
-      console.log('submit!')
-    },
-    loadArticles () {
-      getArticles().then(res => {
-        this.articles = res.data.data.results
+    loadArticles (page = 1) {
+      getArticles({
+        page,
+        per_page: this.pageSize,
+        status: this.articleStatus,
+        channel_id: this.articleChannelIdSelected
+      }).then(res => {
+        // const { articles, total_count } = res.data.data // 1.解构语法；2.ESLint: Identifier 'total_count' is not in camel case.(camelcase)
+        const { results, total_count: totalArticlesCount } = res.data.data // 1.解构语法；2.ESLint: Identifier 'total_count' is not in camel case.(camelcase)
+        this.articles = results
+        this.totalArticlesCount = totalArticlesCount
       })
+    },
+    getArticleChannels () {
+      getArticleChannels().then(res => {
+        this.articleChannels = res.data.data.channels
+      })
+    },
+    onPageChange (page) {
+      this.loadArticles(page)
     }
   }
 }
@@ -171,5 +209,14 @@ export default {
 
 .list-table {
   margin-bottom: 20px;
+}
+
+.article-cover {
+  width: 60px;
+  background-size: cover;
+}
+
+.image-slot {
+  text-align: center;
 }
 </style>
