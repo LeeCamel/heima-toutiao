@@ -113,7 +113,7 @@
           <el-table-column
             label="操作">
             <!-- 如果需要自定义表格列模板，则把需要自定义的内容放到 template 里面 -->
-            <template>
+            <template slot-scope="scope">
               <el-button
                 size="mini"
                 circle
@@ -125,6 +125,7 @@
                 type="danger"
                 icon="el-icon-delete"
                 circle
+                @click="onDeleteArticle(scope.row.id)"
               ></el-button>
             </template>
           </el-table-column>
@@ -137,6 +138,7 @@
           :total="totalArticlesCount"
           :page-size="pageSize"
           :disabled="loading"
+          :current-page.sync="currentPage"
           @current-change="onPageChange">
         </el-pagination>
         <!-- /列表分页 -->
@@ -146,7 +148,11 @@
 </template>
 
 <script>
-import { getArticles, getArticleChannels } from '@/api/article'
+import {
+  getArticles,
+  getArticleChannels,
+  deleteArticle
+} from '@/api/article'
 
 export default {
   name: 'ArticleIndex',
@@ -161,7 +167,8 @@ export default {
       articleChannels: [],
       articleChannelIdSelected: null,
       pubDates: [],
-      loading: true
+      loading: true,
+      currentPage: 1
     }
   },
   computed: {
@@ -203,6 +210,26 @@ export default {
     },
     onPageChange (page) {
       this.loadArticles(page)
+    },
+    onDeleteArticle (articleID) {
+      this.$confirm('确认删除吗？', '删除提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        // 删除文章
+        deleteArticle(articleID.toString())
+        this.$message({
+          message: '删除成功',
+          type: 'success'
+        })
+        this.loadArticles(this.currentPage)
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        })
+      })
     }
   }
 }
