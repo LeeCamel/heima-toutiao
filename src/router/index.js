@@ -5,6 +5,7 @@ import Login from '@/views/login'
 import Home from '@/views/home'
 import Layout from '@/views/layout'
 import Article from '@/views/article'
+import Publish from '@/views/publish/'
 
 Vue.use(VueRouter)
 
@@ -28,6 +29,11 @@ const routes = [
         path: '/article', // path为空，会作为默认子路由渲染
         name: 'article',
         component: Article
+      },
+      {
+        path: '/publish', // path为空，会作为默认子路由渲染
+        name: 'publish',
+        component: Publish
       }
     ]
   }
